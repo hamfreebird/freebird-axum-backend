@@ -22,6 +22,7 @@ use axum::{
     http::StatusCode,
 };
 use crate::handlers::admin::create_post;
+use crate::handlers::health::health_check;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -56,6 +57,7 @@ async fn main() -> anyhow::Result<()> {
     // 构建路由
     let app = Router::new()
         .nest("/api/admin", admin_routes)
+        .route("/api/health", get(health_check))
         .route("/", get(|| async { "Hello, World!" }))
         .layer(cors)
         .with_state(pool);
