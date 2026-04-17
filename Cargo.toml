@@ -1,25 +1,35 @@
 [package]
-name = "backend"
-version = "0.1.0"
-edition = "2024"
+name = "blog-backend"        # 项目名称
+version = "0.1.0"            # 版本号
+edition = "2021"             # Rust 语言版本 (2021版)
 
 [dependencies]
-# Web 框架
-axum = "0.7"
-tokio = { version = "1", features = ["full"] }
-tower = "0.4"
-tower-http = { version = "0.5", features = ["cors", "trace"] }
+# ---------- Web 框架核心 ----------
+axum = "0.7"                 # Axum Web 框架，基于 Tokio/Hyper
+tokio = { version = "1", features = ["full"] }  # 异步运行时，支持多线程、网络、文件等
+tower = "0.4"                # 中间件和服务抽象层
+tower-http = { version = "0.5", features = ["cors", "trace"] }  # 提供跨域、日志等中间件
 
-# 数据库
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono", "uuid", "migrate"] }
-chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1", features = ["v4", "serde"] }
+# ---------- 数据库 ----------
+sqlx = { version = "0.7", features = [
+    "runtime-tokio-native-tls",  # 使用 Tokio 运行时 + 原生 TLS
+    "postgres",                  # 启用 PostgreSQL 支持
+    "chrono",                    # 支持时间类型与 chrono 的转换
+    "uuid",                      # 支持 UUID 类型
+    "migrate"                    # 启用内置迁移功能
+] }
+chrono = { version = "0.4", features = ["serde"] }  # 时间库，支持序列化
+uuid = { version = "1", features = ["v4", "serde"] } # UUID 生成与序列化
 
-# 序列化
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# ---------- 序列化与反序列化 ----------
+serde = { version = "1", features = ["derive"] }  # 序列化框架，派生宏自动实现
+serde_json = "1"               # JSON 处理
 
-# 配置与工具
-dotenvy = "0.15"
-anyhow = "1"
-thiserror = "1"
+# ---------- 配置与工具 ----------
+dotenvy = "0.15"               # 从 .env 文件加载环境变量
+anyhow = "1"                   # 灵活的错误类型，适合应用级错误处理
+thiserror = "1"                # 自定义错误类型的派生宏
+
+# ---------- 日志 ----------
+tracing = "0.1"                # 结构化日志门面
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }  # 日志订阅器，支持环境变量过滤
