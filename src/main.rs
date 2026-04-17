@@ -8,11 +8,13 @@ use crate::config::Config;
 use crate::db::create_pool;
 use crate::routes::create_router;
 use std::net::SocketAddr;
+use axum::http::HeaderValue;
 use axum::Router;
 use axum::routing::get;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tokio::net::TcpListener;
+use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -35,9 +37,15 @@ async fn main() -> anyhow::Result<()> {
     // 运行数据库迁移
     sqlx::migrate!().run(&pool).await?;
 
+    let cors = CorsLayer::new()
+        .allow_origin("https://freebirdflyinthesky.netlify.app/".parse::<HeaderValue>().unwrap())
+        .allow_methods(Any)
+        .allow_headers(Any);
+
     // 构建路由
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
+        .layer(cors)
         .with_state(pool);
 
     // 1. 准备监听地址和端口

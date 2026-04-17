@@ -5,13 +5,13 @@ edition = "2021"             # Rust 语言版本 (2021版)
 
 [dependencies]
 # ---------- Web 框架核心 ----------
-axum = "0.7"                 # Axum Web 框架，基于 Tokio/Hyper
+axum = "0.8"                 # Axum Web 框架，基于 Tokio/Hyper
 tokio = { version = "1", features = ["full"] }  # 异步运行时，支持多线程、网络、文件等
-tower = "0.4"                # 中间件和服务抽象层
-tower-http = { version = "0.5", features = ["cors", "trace"] }  # 提供跨域、日志等中间件
+tower = "0.5"                # 中间件和服务抽象层
+tower-http = { version = "0.6", features = ["cors", "trace"] }  # 提供跨域、日志等中间件
 
 # ---------- 数据库 ----------
-sqlx = { version = "0.7", features = [
+sqlx = { version = "0.8", features = [
     "runtime-tokio-native-tls",  # 使用 Tokio 运行时 + 原生 TLS
     "postgres",                  # 启用 PostgreSQL 支持
     "chrono",                    # 支持时间类型与 chrono 的转换
@@ -28,8 +28,13 @@ serde_json = "1"               # JSON 处理
 # ---------- 配置与工具 ----------
 dotenvy = "0.15"               # 从 .env 文件加载环境变量
 anyhow = "1"                   # 灵活的错误类型，适合应用级错误处理
-thiserror = "1"                # 自定义错误类型的派生宏
+thiserror = "2"                # 自定义错误类型的派生宏
 
 # ---------- 日志 ----------
 tracing = "0.1"                # 结构化日志门面
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }  # 日志订阅器，支持环境变量过滤
+
+# Shuttle 依赖
+# shuttle-runtime = "0.57"
+# shuttle-axum = "0.57"
+# shuttle-shared-db = { version = "0.57", features = ["postgres", "sqlx"] }
