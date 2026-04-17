@@ -8,6 +8,8 @@ use crate::config::Config;
 use crate::db::create_pool;
 use crate::routes::create_router;
 use std::net::SocketAddr;
+use axum::Router;
+use axum::routing::get;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tokio::net::TcpListener;
@@ -34,12 +36,19 @@ async fn main() -> anyhow::Result<()> {
     sqlx::migrate!().run(&pool).await?;
 
     // 构建路由
-    let app = create_router(pool);
+    let app = Router::new()
+        .route("/", get(|| async { "Hello, World!" }))
+        .with_state(pool);
 
-    // ()(),启动！
-    let listener = TcpListener::bind("0.0.0.0:3001").await?;
-    info!("Server listening on http://{}", listener.local_addr()?); // 使用 info! 记录日志
+    // 1. 准备监听地址和端口
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3001".to_string()).parse::<u16>()?;
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
+    // 2. 创建 TcpListener
+    let listener = TcpListener::bind(addr).await?;
+
+    // 3. 使用 axum::serve 启动服务
+    info!("🚀 Server listening on http://{}", addr);
     axum::serve(listener, app).await?;
 
     Ok(())
