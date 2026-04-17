@@ -9,12 +9,19 @@ use crate::db::create_pool;
 use crate::routes::create_router;
 use std::net::SocketAddr;
 use axum::http::HeaderValue;
-use axum::Router;
-use axum::routing::get;
+use axum::{middleware, Router};
+use axum::routing::{get, post};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
+use axum::{
+    extract::Request,      // 使用这个具体类型
+    middleware::Next,
+    response::Response,
+    http::StatusCode,
+};
+use crate::handlers::admin::create_post;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -42,8 +49,13 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods(Any)
         .allow_headers(Any);
 
+    let admin_routes = Router::new()
+        .route("/posts", post(create_post))
+        .layer(middleware::from_fn(auth));
+
     // 构建路由
     let app = Router::new()
+        .nest("/api/admin", admin_routes)
         .route("/", get(|| async { "Hello, World!" }))
         .layer(cors)
         .with_state(pool);
@@ -63,4 +75,24 @@ async fn main() -> anyhow::Result<()> {
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+async fn auth(
+    req: Request,           // 直接使用 axum::extract::Request
+    next: Next,
+) -> Result<Response, StatusCode> {
+    let auth_header = req
+        .headers()
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())
+        .ok_or(StatusCode::UNAUTHORIZED)?;
+
+    let expected_token = std::env::var("ADMIN_TOKEN")
+        .expect("ADMIN_TOKEN must be set");
+
+    if auth_header != format!("Bearer {}", expected_token) {
+        return Err(StatusCode::UNAUTHORIZED);
+    }
+
+    Ok(next.run(req).await)
 }
