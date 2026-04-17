@@ -49,7 +49,10 @@ async fn main() -> anyhow::Result<()> {
         .with_state(pool);
 
     // 1. 准备监听地址和端口
-    let port = std::env::var("PORT").unwrap_or_else(|_| "3001".to_string()).parse::<u16>()?;
+    let port: u16 = std::env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_string())
+        .parse()
+        .expect("PORT must be a number");
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     // 2. 创建 TcpListener
